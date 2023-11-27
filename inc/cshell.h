@@ -10,10 +10,10 @@
 typedef int32_t (*cshell_getc_pf)();
 typedef int32_t (*cshell_putc_pf)(int32_t ch);
 
-struct tagCShellCfg{
+struct tagCShellCfg {
     cshell_getc_pf getc_pf;
     cshell_putc_pf putc_pf;
-} ;
+};
 typedef struct tagCShellCfg CShellCfg;
 bool cshell_initialize_cfg(CShellCfg * cfg);
 
