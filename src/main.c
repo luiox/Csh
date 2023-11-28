@@ -3,10 +3,10 @@
 #include <stdlib.h>
 
 int
-main()
+main(int argc, char ** argv)
 {
     CShellCfg cfg = { .getc_pf = getc, .putc_pf = putc };
-    cshell_initialize(&cfg);
+    cshell_initialize_cfg(&cfg);
     cshell_start();
     return EXIT_SUCCESS;
 }
