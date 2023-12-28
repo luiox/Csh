@@ -1,88 +1,28 @@
 #include <cshell.h>
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
-
-/*
- * If it is initialized ,then set to true.
- */
-static bool cshell_initialize_flag = false;
-
-static cshell_getc_pf cshell_getc_func;
-
-static cshell_getc_pf cshell_putc_func;
-
-// Initialize the corresponding IO interface
-bool
-cshell_initialize_cfg(CShellCfg * cfg)
-{
-    if (NULL == cfg)
-        return false;
-    if (NULL == cfg->getc_pf)
-        return false;
-    if (NULL == cfg->putc_pf)
-        return false;
-    cshell_getc_func = cfg->getc_pf;
-    cshell_putc_func = cfg->putc_pf;
-    return true;
-}
+#include <string.h>
+#include <unistd.h>
 
 void
-cshell_readline(int8_t * buf, uint32_t maxlen)
+cshell_initialize()
 {
-    if (!cshell_initialize_flag)
-        return;
-
-    int i = 0;
-    do {
-        int8_t ch = cshell_getc_func();
-        buf[i] = ch;
-    } while (buf[i++] != '\n' && i < maxlen);
-    buf[i] = '\0';
+    // 进行csh的初始化工作
 }
 
-// simply split the command line into a string array using spaces and return.
-int8_t **
-cshell_parse_cmdline(int8_t* cmdline)
+// 把命令行参数分割成一个一个的字符串，函数返回字符串数组，数组的元素个数保存在n里
+char **
+cshell_parse_cmdline(char * cmdline, int *n)
 {
-    int8_t ** args = NULL; // store parsed command-line parameters
-    int8_t * token = NULL; // tags used to split the command line
-    int8_t * delimiters = " ";
-    int32_t token_count = 0; // the number of command line parameters
-
-    // using the strtok function to split the command line
-    token = strtok(cmdline, delimiters);
-    while (token != NULL) {
-        args = (int8_t **)realloc(args, (token_count + 1) * sizeof(int8_t *));
-        if (args == NULL) {
-            // memory allocation failed
-            return NULL;
-        }
-        args[token_count++] = token;
-        token = strtok(NULL, delimiters);
-    }
-
-    // add the end tag of the parameter array
-    args = (int8_t **)realloc(args, (token_count + 1) * sizeof(int8_t *));
-    if (args == NULL) {
-        // memory allocation failed
-        return NULL;
-    }
-    args[token_count] = NULL;
+    char ** args = (char **)malloc(sizeof(char *) * CSHELL_CMD_MAX_NUM);
 
     return args;
 }
 
-// Perform initialization work.
-void
-cshell_init()
+int
+cshell_execute(char ** args,int n)
 {
-    // Now is nothing to do.
-}
-
-int32_t
-cshell_execute(int8_t ** args)
-{
-    if(strcmp(args[0], "exit") == 0)
+    if (strcmp(args[0], "exit") == 0)
         return 0;
     else
         return 1;
@@ -91,15 +31,41 @@ cshell_execute(int8_t ** args)
 void
 cshell_start()
 {
-    int8_t buf[CSHELL_CMDLINE_MAX_BUFFER_SIZE] = { 0 };
-    int8_t** args;
-    int32_t ret;
-    cshell_init();
-    do
-    {
-        cshell_readline(buf, CSHELL_CMDLINE_MAX_BUFFER_SIZE);
-        args = cshell_parse_cmdline(buf);
-        ret = cshell_execute(args);
+    char buf[CSHELL_CMDLINE_MAX_BUFFER_SIZE] = { 0 };
+    char ** args;
+    int ret;
+    int n;
+    char cur_dir[CSHELL_USERNAME_MAX_BUFFER_SIZE] = { 0 };
+    char username[CSHELL_CURDIR_MAX_BUFFER_SIZE] = { 0 };
+
+    // 获取当前用户名
+    if(getlogin() == NULL) { // 如果是其他方式启动，可能会获取不到用户名
+        strcpy(username, "unknown user");
+    }else{
+        strcpy(username, getlogin());
+    }
+
+    // 获取当前目录
+    if (getcwd(cur_dir, CSHELL_CURDIR_MAX_BUFFER_SIZE) == NULL) {
+        printf("getcwd error: current directory is too long!\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    // 开始REPL
+    do {
+        // 打印提示符
+        printf("\033[35m#\033[0m \033[32m%s\033[0m in \033[34m%s\033[0m\n",
+               username,
+               cur_dir);
+        printf("\033[33m$\033[0m ");
+
+        // 读取一行信息
+        if (fgets(buf, CSHELL_CMDLINE_MAX_BUFFER_SIZE, stdin) != NULL) {
+            // 解析命令行
+            args = cshell_parse_cmdline(buf,&n);
+            // 运行命令
+            ret = cshell_execute(args,n);
+        }
         memset(buf, 0, CSHELL_CMDLINE_MAX_BUFFER_SIZE);
     } while (ret);
 }
