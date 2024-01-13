@@ -1,0 +1,11 @@
+[
+{
+  "directory": "/home/canrad/project/Csh",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-O0", "-Iinc", "-o", "build/.objs/csh/linux/x86_64/debug/src/cshell.c.o", "src/cshell.c"],
+  "file": "src/cshell.c"
+},
+{
+  "directory": "/home/canrad/project/Csh",
+  "arguments": ["/usr/bin/gcc", "-c", "-m64", "-g", "-O0", "-Iinc", "-o", "build/.objs/csh/linux/x86_64/debug/src/main.c.o", "src/main.c"],
+  "file": "src/main.c"
+}]
