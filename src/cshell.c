@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <sys/types.h>
+#include <sys/wait.h>
 void
 cshell_initialize()
 {
@@ -24,8 +25,11 @@ cshell_execute(char ** args,int n)
 {
     if (strcmp(args[0], "exit") == 0)
         return 0;
-    else
+    else{
+        pid_t pid;
+        int status;
         return 1;
+    }
 }
 
 void
